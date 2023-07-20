@@ -1,0 +1,47 @@
+# docker-compose.yaml file is created to run multi docker container f
+
+version: "3.8"
+
+services:
+  # MongoDB service
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_URI: mongodb+srv://itpmadmin:Admin123@cluster0.6zlhrnj.mongodb.net/ITPM?retryWrites=true&w=majority
+    volumes:
+      - data:/data/db
+
+  # Node.js backend service
+  backend:
+    build:
+      context: ./server
+    ports:
+      - "5000:5000"
+    volumes:
+      - logs:/app/logs
+      - .server:/app
+      - /app/node_modules
+    environment:
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - mongo
+
+  # React.js frontend service
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client/src:/app/src
+    environment:
+      - WATCHPACK_POLLING=true
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
+volumes:
+  data:
+  logs:
